@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"runtime"
 	"strconv"
 	"testing"
 	"time"
@@ -143,14 +144,16 @@ func TestLocalFormat(t *testing.T) {
 	}
 
 	opts := formatOptions{
-		Tag: "test",
+		Tag:       "test",
+		AddSource: false,
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			r := slog.NewRecord(testTime, slog.LevelInfo, "a message", 0)
+			pc, _, _, _ := runtime.Caller(0)
+			r := slog.NewRecord(testTime, slog.LevelInfo, "a message", pc)
 			r.AddAttrs(tc.attr)
 
 			buf := make([]byte, 0, 1024)
