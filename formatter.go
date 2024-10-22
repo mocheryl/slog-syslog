@@ -13,6 +13,10 @@ import (
 
 // formatOptions are options passed to a formatter.
 type formatOptions struct {
+	// AddSource indicates whether to compute the source code position of the
+	// log statement and add it as a prefix to the message.
+	AddSource bool
+
 	// Hostname is the host's name we send when connected to a remote syslog
 	// server.
 	Hostname string
@@ -70,7 +74,7 @@ func goFormat(_ context.Context, buf []byte, r slog.Record, opts formatOptions) 
 		buf = append(buf, ']', ' ')
 	}
 
-	if r.PC != 0 {
+	if opts.AddSource && r.PC != 0 {
 		fs := runtime.CallersFrames([]uintptr{r.PC})
 		f, _ := fs.Next()
 
@@ -123,7 +127,7 @@ func localFormat(_ context.Context, buf []byte, r slog.Record, opts formatOption
 		buf = append(buf, ']', ' ')
 	}
 
-	if r.PC != 0 {
+	if opts.AddSource && r.PC != 0 {
 		fs := runtime.CallersFrames([]uintptr{r.PC})
 		f, _ := fs.Next()
 

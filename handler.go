@@ -13,6 +13,10 @@ import (
 
 // Options sets the syslog logging options.
 type Options struct {
+	// AddSource, causes the handler to compute the source code position of the
+	// log statement and add it as a prefix to the message.
+	AddSource bool
+
 	// Level is the level at which we log at.
 	Level slog.Leveler
 
@@ -119,6 +123,7 @@ func (s *SyslogHandler) Handle(ctx context.Context, r slog.Record) error {
 	buf := *bufp
 
 	buf = s.formatter(ctx, buf, r, formatOptions{
+		AddSource: s.opts.AddSource,
 		Hostname:  s.hostname,
 		Facility:  s.opts.Facility,
 		Tag:       s.opts.Tag,
