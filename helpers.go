@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"reflect"
+	"strconv"
 	"time"
 )
 
@@ -46,6 +47,14 @@ func appendAttr(buf, prefix []byte, a slog.Attr) []byte {
 		buf = appendKey(buf, prefix, a.Key)
 
 		val := a.Value.Any()
+		if src, ok := val.(*slog.Source); ok {
+			buf = append(buf, structuredEscape.Replace(src.File)...)
+			buf = append(buf, ':')
+			buf = strconv.AppendInt(buf, int64(src.Line), 10)
+			buf = append(buf, '"')
+			break
+		}
+
 		if tm, ok := val.(encoding.TextMarshaler); ok {
 			data, err := tm.MarshalText()
 			if err != nil {
