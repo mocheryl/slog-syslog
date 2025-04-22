@@ -1,5 +1,7 @@
 # Structured log syslog
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/mocheryl/slog-syslog.svg)](https://pkg.go.dev/github.com/mocheryl/slog-syslog)
+
 Go structured log syslog handler.
 
 ## Requirements
@@ -25,7 +27,7 @@ func main() {
 		return
 	}
 
-	logger := slog.New(h)
+	l := slog.New(h)
 	slog.SetDefault(l)
 
 	slog.Info("Hello, World!")

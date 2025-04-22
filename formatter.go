@@ -60,8 +60,24 @@ func goFormat(_ context.Context, buf []byte, r slog.Record, opts formatOptions) 
 	buf = strconv.AppendInt(buf, int64(os.Getpid()), 10)
 	buf = append(buf, ']', ':', ' ')
 
-	if r.NumAttrs() > 0 || len(opts.Preformat) > 0 {
+	var source *slog.Source
+	if opts.AddSource && r.PC != 0 {
+		fs := runtime.CallersFrames([]uintptr{r.PC})
+		f, _ := fs.Next()
+
+		source = &slog.Source{
+			Function: f.Function,
+			File:     f.File,
+			Line:     f.Line,
+		}
+	}
+
+	if source != nil || r.NumAttrs() > 0 || len(opts.Preformat) > 0 {
 		buf = append(buf, '[')
+		if source != nil {
+			buf = appendAttr(buf, nil, slog.Any(slog.SourceKey, source))
+			buf = append(buf, ' ')
+		}
 		buf = append(buf, opts.Preformat...)
 
 		r.Attrs(func(a slog.Attr) bool {
@@ -72,16 +88,6 @@ func goFormat(_ context.Context, buf []byte, r slog.Record, opts formatOptions) 
 		buf = bytes.TrimSuffix(buf, []byte{' '})
 
 		buf = append(buf, ']', ' ')
-	}
-
-	if opts.AddSource && r.PC != 0 {
-		fs := runtime.CallersFrames([]uintptr{r.PC})
-		f, _ := fs.Next()
-
-		buf = append(buf, f.File...)
-		buf = append(buf, ':')
-		buf = strconv.AppendInt(buf, int64(f.Line), 10)
-		buf = append(buf, ' ')
 	}
 
 	buf = append(buf, r.Message...)
@@ -113,8 +119,24 @@ func localFormat(_ context.Context, buf []byte, r slog.Record, opts formatOption
 	buf = strconv.AppendInt(buf, int64(os.Getpid()), 10)
 	buf = append(buf, ']', ':', ' ')
 
-	if r.NumAttrs() > 0 || len(opts.Preformat) > 0 {
+	var source *slog.Source
+	if opts.AddSource && r.PC != 0 {
+		fs := runtime.CallersFrames([]uintptr{r.PC})
+		f, _ := fs.Next()
+
+		source = &slog.Source{
+			Function: f.Function,
+			File:     f.File,
+			Line:     f.Line,
+		}
+	}
+
+	if source != nil || r.NumAttrs() > 0 || len(opts.Preformat) > 0 {
 		buf = append(buf, '[')
+		if source != nil {
+			buf = appendAttr(buf, nil, slog.Any(slog.SourceKey, source))
+			buf = append(buf, ' ')
+		}
 		buf = append(buf, opts.Preformat...)
 
 		r.Attrs(func(a slog.Attr) bool {
@@ -125,16 +147,6 @@ func localFormat(_ context.Context, buf []byte, r slog.Record, opts formatOption
 		buf = bytes.TrimSuffix(buf, []byte{' '})
 
 		buf = append(buf, ']', ' ')
-	}
-
-	if opts.AddSource && r.PC != 0 {
-		fs := runtime.CallersFrames([]uintptr{r.PC})
-		f, _ := fs.Next()
-
-		buf = append(buf, f.File...)
-		buf = append(buf, ':')
-		buf = strconv.AppendInt(buf, int64(f.Line), 10)
-		buf = append(buf, ' ')
 	}
 
 	buf = append(buf, r.Message...)
